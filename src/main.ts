@@ -1,27 +1,31 @@
 import { NestFactory } from '@nestjs/core';
-import { Logger, ValidationPipe } from '@nestjs/common';
+import { ValidationPipe, Logger } from '@nestjs/common';
 import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
 
 async function bootstrap() {
-  const logger = new Logger('Bootstrap');
-  const app = await NestFactory.create(AppModule, { bufferLogs: true });
-  app.useLogger(new Logger());
+  const app = await NestFactory.create(AppModule, {
+    rawBody: true,
+  });
 
-  app.useGlobalPipes(new ValidationPipe({ whitelist: true }));
+  app.useGlobalPipes(
+    new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }),
+  );
   app.useGlobalFilters(new AllExceptionsFilter());
 
   const config = new DocumentBuilder()
     .setTitle('Upcover API')
-    .setDescription('The Upcover API description')
+    .setDescription('Subscription Management API with Stripe')
     .setVersion('1.0')
+    .addBearerAuth()
     .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document);
 
   const port = process.env.PORT ?? 3000;
   await app.listen(port);
-  logger.log(`Application is running on: http://localhost:${port}`);
+  Logger.log(`Application running on http://localhost:${port}`, 'Bootstrap');
+  Logger.log(`Swagger docs at http://localhost:${port}/api`, 'Bootstrap');
 }
-bootstrap();
+void bootstrap();

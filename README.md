@@ -1,98 +1,170 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# Upcover — Subscription Management API
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+A production-grade REST API built with **NestJS**, **MongoDB**, and **Stripe** for managing user subscriptions with JWT authentication and role-based access control.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## Tech Stack
 
-## Description
+- **NestJS v11** — TypeScript framework
+- **MongoDB** — Database (via Mongoose v9)
+- **Stripe** — Payment & subscription billing
+- **JWT** — Authentication (Bearer tokens)
+- **Swagger** — Interactive API docs at `/api`
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+## Getting Started
 
-## Project setup
+### Prerequisites
+
+- Node.js >= 18
+- pnpm
+- MongoDB instance (local or Atlas)
+- Stripe account (optional for local testing)
+
+### Installation
 
 ```bash
-$ pnpm install
+pnpm install
 ```
 
-## Compile and run the project
+### Environment Variables
+
+Create a `.env` file in the project root:
+
+```env
+MONGO_URI=mongodb+srv://<user>:<pass>@<cluster>/<db>
+JWT_SECRET=your-jwt-secret
+JWT_EXPIRES_IN=7d
+STRIPE_SECRET_KEY=sk_test_...       # optional — app runs without it
+STRIPE_WEBHOOK_SECRET=whsec_...     # optional — needed for webhooks
+FRONTEND_URL=http://localhost:3000
+PORT=3000
+```
+
+> **Note:** The app starts without Stripe keys. Stripe-dependent endpoints (checkout, cancel, webhook) will return a `503 Service Unavailable` error, but everything else works normally.
+
+### Running
 
 ```bash
-# development
-$ pnpm run start
+# Development (watch mode)
+pnpm start:dev
 
-# watch mode
-$ pnpm run start:dev
-
-# production mode
-$ pnpm run start:prod
+# Production build
+pnpm build
+pnpm start:prod
 ```
 
-## Run tests
+### Swagger Docs
+
+Once running, open [http://localhost:3000/api](http://localhost:3000/api) to explore the API interactively.
+
+## API Endpoints
+
+### Auth
+
+| Method | Endpoint    | Auth | Description                        |
+| ------ | ----------- | ---- | ---------------------------------- |
+| POST   | `/register` | No   | Register a new user                |
+| POST   | `/login`    | No   | Login and receive a JWT token      |
+
+### Subscriptions
+
+| Method | Endpoint                 | Auth       | Description                         |
+| ------ | ------------------------ | ---------- | ----------------------------------- |
+| GET    | `/plans`                 | No         | List all available plans             |
+| GET    | `/subscription`          | JWT        | Get current user's subscription      |
+| POST   | `/subscription/checkout` | JWT        | Create a Stripe checkout session     |
+| POST   | `/subscription/cancel`   | JWT        | Cancel active subscription           |
+| GET    | `/subscription/all`      | JWT + Admin| List all subscriptions (admin only)  |
+| POST   | `/webhook`               | No (Stripe)| Stripe webhook receiver              |
+
+### Request Examples
+
+**Register:**
+```bash
+curl -X POST http://localhost:3000/register \
+  -H "Content-Type: application/json" \
+  -d '{"email": "user@example.com", "password": "password123"}'
+```
+
+**Login:**
+```bash
+curl -X POST http://localhost:3000/login \
+  -H "Content-Type: application/json" \
+  -d '{"email": "user@example.com", "password": "password123"}'
+```
+
+**Get Plans:**
+```bash
+curl http://localhost:3000/plans
+```
+
+**Create Checkout (requires JWT):**
+```bash
+curl -X POST http://localhost:3000/subscription/checkout \
+  -H "Authorization: Bearer <token>" \
+  -H "Content-Type: application/json" \
+  -d '{"planId": "basic"}'
+```
+
+## Subscription Plans
+
+| Plan     | Price   | Features                         |
+| -------- | ------- | -------------------------------- |
+| Basic    | $9/mo   | 5 projects, basic analytics      |
+| Standard | $29/mo  | 25 projects, advanced analytics  |
+| Premium  | $99/mo  | Unlimited projects, priority support |
+
+## Testing
 
 ```bash
-# unit tests
-$ pnpm run test
+# Unit tests
+pnpm test
 
-# e2e tests
-$ pnpm run test:e2e
+# Watch mode
+pnpm test:watch
 
-# test coverage
-$ pnpm run test:cov
+# Coverage
+pnpm test:cov
+
+# E2E tests
+pnpm test:e2e
 ```
 
-## Deployment
+## Project Structure
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
-
-```bash
-$ pnpm install -g @nestjs/mau
-$ mau deploy
+```
+src/
+├── main.ts                          # Bootstrap, Swagger, global filters
+├── app.module.ts                    # Root module
+├── auth/
+│   ├── auth.controller.ts           # /register, /login
+│   ├── auth.service.ts              # JWT auth logic
+│   ├── jwt-auth.guard.ts            # Bearer token guard
+│   ├── roles.guard.ts               # RBAC guard
+│   ├── roles.decorator.ts           # @Roles() decorator
+│   └── dto/
+├── users/
+│   ├── users.service.ts             # User CRUD
+│   └── schemas/user.schema.ts       # User model (email, password, role)
+├── subscriptions/
+│   ├── subscription.controller.ts   # Subscription endpoints
+│   ├── subscription.service.ts      # Business logic
+│   ├── stripe.service.ts            # Stripe SDK wrapper (optional)
+│   ├── plans.constant.ts            # Plan definitions
+│   ├── dto/
+│   └── schemas/subscription.schema.ts
+└── common/
+    └── filters/all-exceptions.filter.ts
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+## Stripe Webhook Events
 
-## Resources
+The webhook handler processes:
 
-Check out a few resources that may come in handy when working with NestJS:
-
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
-
-## Support
-
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+- `checkout.session.completed` — Creates subscription in DB after successful payment
+- `invoice.payment_succeeded` — Updates subscription period
+- `customer.subscription.created` — Logs creation (handled via checkout)
+- `customer.subscription.deleted` — Marks subscription as canceled
 
 ## License
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+UNLICENSED

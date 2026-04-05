@@ -1,0 +1,488 @@
+{
+  "info": {
+    "name": "Upcover - Subscription Management API",
+    "description": "Full API collection for the Upcover Subscription Management system built with NestJS, MongoDB, and Stripe.\n\nSetup:\n1. Import this collection into Postman\n2. Set the `baseUrl` variable (default: http://localhost:3000)\n3. Run requests in order: Register → Login → use token for protected routes",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000",
+      "type": "string"
+    },
+    {
+      "key": "token",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Health & Docs",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/",
+              "host": ["{{baseUrl}}"],
+              "path": [""]
+            },
+            "description": "Verify the server is running."
+          },
+          "response": []
+        },
+        {
+          "name": "Swagger Docs",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api",
+              "host": ["{{baseUrl}}"],
+              "path": ["api"]
+            },
+            "description": "Open Swagger UI documentation in browser."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Register",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    pm.test('Registration successful', function () {",
+                  "        var json = pm.response.json();",
+                  "        pm.expect(json).to.have.property('access_token');",
+                  "        pm.collectionVariables.set('token', json.access_token);",
+                  "    });",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"test@example.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["register"]
+            },
+            "description": "Register a new user. Returns JWT token on success. Token is auto-saved to collection variable."
+          },
+          "response": []
+        },
+        {
+          "name": "Register (Duplicate - expect 409)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"test@example.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["register"]
+            },
+            "description": "Duplicate registration should return 409 Conflict."
+          },
+          "response": []
+        },
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    pm.test('Login successful', function () {",
+                  "        var json = pm.response.json();",
+                  "        pm.expect(json).to.have.property('access_token');",
+                  "        pm.collectionVariables.set('token', json.access_token);",
+                  "    });",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"test@example.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["login"]
+            },
+            "description": "Login with existing credentials. Returns JWT token. Token is auto-saved to collection variable."
+          },
+          "response": []
+        },
+        {
+          "name": "Login (Wrong Password - expect 401)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"test@example.com\",\n  \"password\": \"wrongpassword\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["login"]
+            },
+            "description": "Login with wrong password should return 401 Unauthorized."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Plans",
+      "item": [
+        {
+          "name": "Get All Plans",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Returns 3 plans', function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json).to.be.an('array').with.lengthOf(3);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/plans",
+              "host": ["{{baseUrl}}"],
+              "path": ["plans"]
+            },
+            "description": "Get all available subscription plans (public, no auth required). Returns Basic ($9.99), Standard ($19.99), Premium ($39.99)."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Subscriptions",
+      "item": [
+        {
+          "name": "Get My Subscription",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/subscription",
+              "host": ["{{baseUrl}}"],
+              "path": ["subscription"]
+            },
+            "description": "Get the current user's active subscription. Returns 404 if no subscription exists. Requires JWT."
+          },
+          "response": []
+        },
+        {
+          "name": "Get My Subscription (No Token - expect 401)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/subscription",
+              "host": ["{{baseUrl}}"],
+              "path": ["subscription"]
+            },
+            "description": "Access subscription endpoint without JWT token. Should return 401 Unauthorized."
+          },
+          "response": []
+        },
+        {
+          "name": "Create Checkout Session (Basic Plan)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"planId\": \"basic\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/subscription/checkout",
+              "host": ["{{baseUrl}}"],
+              "path": ["subscription", "checkout"]
+            },
+            "description": "Create a Stripe Checkout Session for the Basic plan. Returns a checkout URL to redirect the user to Stripe payment page. Requires JWT.\n\nNote: Will return 500 if Stripe price IDs are placeholders. Replace them in plans.constant.ts with real Stripe price IDs."
+          },
+          "response": []
+        },
+        {
+          "name": "Create Checkout Session (Standard Plan)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"planId\": \"standard\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/subscription/checkout",
+              "host": ["{{baseUrl}}"],
+              "path": ["subscription", "checkout"]
+            },
+            "description": "Create a Stripe Checkout Session for the Standard plan. Requires JWT."
+          },
+          "response": []
+        },
+        {
+          "name": "Create Checkout Session (Premium Plan)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"planId\": \"premium\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/subscription/checkout",
+              "host": ["{{baseUrl}}"],
+              "path": ["subscription", "checkout"]
+            },
+            "description": "Create a Stripe Checkout Session for the Premium plan. Requires JWT."
+          },
+          "response": []
+        },
+        {
+          "name": "Create Checkout (Invalid Plan - expect 400)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"planId\": \"nonexistent\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/subscription/checkout",
+              "host": ["{{baseUrl}}"],
+              "path": ["subscription", "checkout"]
+            },
+            "description": "Attempt checkout with an invalid plan ID. Should return 400 Bad Request."
+          },
+          "response": []
+        },
+        {
+          "name": "Cancel Subscription",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/subscription/cancel",
+              "host": ["{{baseUrl}}"],
+              "path": ["subscription", "cancel"]
+            },
+            "description": "Cancel the user's active subscription. Returns 404 if no active subscription. Requires JWT."
+          },
+          "response": []
+        },
+        {
+          "name": "Get All Subscriptions (Admin Only - expect 403)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/subscription/all",
+              "host": ["{{baseUrl}}"],
+              "path": ["subscription", "all"]
+            },
+            "description": "Admin-only endpoint to view all subscriptions. Regular users get 403 Forbidden. Requires JWT + admin role."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Webhook",
+      "item": [
+        {
+          "name": "Stripe Webhook (checkout.session.completed)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "stripe-signature",
+                "value": "t=1234567890,v1=test_signature"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"checkout.session.completed\",\n  \"data\": {\n    \"object\": {\n      \"id\": \"cs_test_123\",\n      \"subscription\": \"sub_test_123\",\n      \"metadata\": {\n        \"userId\": \"REPLACE_WITH_USER_ID\",\n        \"planId\": \"basic\"\n      }\n    }\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/webhook",
+              "host": ["{{baseUrl}}"],
+              "path": ["webhook"]
+            },
+            "description": "Simulate a Stripe webhook event for a completed checkout session.\n\nNote: Replace 'REPLACE_WITH_USER_ID' with a real user ID from your database. When STRIPE_WEBHOOK_SECRET is empty, signature verification is skipped for testing."
+          },
+          "response": []
+        },
+        {
+          "name": "Stripe Webhook (invoice.payment_succeeded)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "stripe-signature",
+                "value": "t=1234567890,v1=test_signature"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"invoice.payment_succeeded\",\n  \"data\": {\n    \"object\": {\n      \"id\": \"inv_test_123\",\n      \"subscription\": \"sub_test_123\",\n      \"status\": \"paid\",\n      \"amount_paid\": 999,\n      \"period_end\": 1735689600\n    }\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/webhook",
+              "host": ["{{baseUrl}}"],
+              "path": ["webhook"]
+            },
+            "description": "Simulate a Stripe webhook for recurring payment success."
+          },
+          "response": []
+        },
+        {
+          "name": "Stripe Webhook (customer.subscription.deleted)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "stripe-signature",
+                "value": "t=1234567890,v1=test_signature"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"customer.subscription.deleted\",\n  \"data\": {\n    \"object\": {\n      \"id\": \"sub_test_123\",\n      \"status\": \"canceled\"\n    }\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/webhook",
+              "host": ["{{baseUrl}}"],
+              "path": ["webhook"]
+            },
+            "description": "Simulate a Stripe webhook for subscription cancellation."
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}
