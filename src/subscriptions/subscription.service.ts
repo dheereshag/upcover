@@ -67,4 +67,8 @@ export class SubscriptionService {
 
     return subscription.save();
   }
+
+  async getAllSubscriptions(): Promise<SubscriptionDocument[]> {
+    return this.subscriptionModel.find().exec();
+  }
 }
