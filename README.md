@@ -1,98 +1,340 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# Upcover API
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+A NestJS REST API for managing insurance subscriptions with JWT-based authentication, role-based access control, and MongoDB persistence.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+---
 
-## Description
+## Table of Contents
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+- [Tech Stack](#tech-stack)
+- [Prerequisites](#prerequisites)
+- [Setup](#setup)
+- [Running the App](#running-the-app)
+- [Deployment](#deployment)
+- [Environment Variables](#environment-variables)
+- [API Usage](#api-usage)
+  - [Auth](#auth)
+  - [Plans](#plans)
+  - [Subscriptions](#subscriptions)
+  - [Admin](#admin)
+- [Postman Collection](#postman-collection)
+- [Swagger Docs](#swagger-docs)
+- [Running Tests](#running-tests)
 
-## Project setup
+---
+
+## Tech Stack
+
+- **NestJS** — Node.js framework
+- **MongoDB + Mongoose** — Database
+- **JWT** — Authentication
+- **bcrypt** — Password hashing
+- **class-validator** — Request validation
+- **Swagger** — API documentation
+
+---
+
+## Prerequisites
+
+- Node.js >= 18
+- pnpm >= 8
+- MongoDB instance (local or Atlas)
+
+---
+
+## Setup
+
+1. **Clone the repository**
+
+   ```bash
+   git clone https://github.com/dheereshag/upcover.git
+   cd upcover
+   ```
+
+2. **Install dependencies**
+
+   ```bash
+   pnpm install
+   ```
+
+3. **Configure environment variables**
+
+   Create a `.env` file in the project root (see [Environment Variables](#environment-variables)).
+
+---
+
+## Running the App
 
 ```bash
-$ pnpm install
+# Development (watch mode)
+pnpm run start:dev
+
+# Standard start
+pnpm run start
+
+# Production
+pnpm run build
+pnpm run start:prod
 ```
 
-## Compile and run the project
+The server starts on `http://localhost:3000` by default (configurable via `PORT`).
 
-```bash
-# development
-$ pnpm run start
-
-# watch mode
-$ pnpm run start:dev
-
-# production mode
-$ pnpm run start:prod
-```
-
-## Run tests
-
-```bash
-# unit tests
-$ pnpm run test
-
-# e2e tests
-$ pnpm run test:e2e
-
-# test coverage
-$ pnpm run test:cov
-```
+---
 
 ## Deployment
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+Live deployment URL:
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+**[https://upcover-seven.vercel.app/](https://upcover-seven.vercel.app/)**
 
-```bash
-$ pnpm install -g @nestjs/mau
-$ mau deploy
+---
+
+## Environment Variables
+
+Create a `.env` file in the project root:
+
+```env
+PORT=3000
+MONGODB_URI=mongodb://localhost:27017/upcover
+JWT_SECRET=your_jwt_secret_here
+JWT_EXPIRES_IN=7d
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+| Variable         | Description                       | Default |
+|------------------|-----------------------------------|---------|
+| `PORT`           | Port the server listens on        | `3000`  |
+| `MONGODB_URI`    | MongoDB connection string         | —       |
+| `JWT_SECRET`     | Secret key for signing JWT tokens | —       |
+| `JWT_EXPIRES_IN` | JWT token expiration duration     | `7d`    |
 
-## Resources
+---
 
-Check out a few resources that may come in handy when working with NestJS:
+## API Usage
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+Base URL: `http://localhost:3000`
 
-## Support
+Authenticated routes require a `Bearer` token in the `Authorization` header:
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+```
+Authorization: Bearer <token>
+```
 
-## Stay in touch
+---
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+### Auth
 
-## License
+#### `POST /register`
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+Register a new user account.
+
+**Request body:**
+
+```json
+{
+  "email": "user@example.com",
+  "password": "password123"
+}
+```
+
+**Response `201`:**
+
+```json
+{
+  "access_token": "eyJhbGci..."
+}
+```
+
+---
+
+#### `POST /login`
+
+Authenticate and receive a JWT token.
+
+**Request body:**
+
+```json
+{
+  "email": "user@example.com",
+  "password": "password123"
+}
+```
+
+**Response `200`:**
+
+```json
+{
+  "access_token": "eyJhbGci..."
+}
+```
+
+---
+
+### Plans
+
+#### `GET /plans`
+
+Returns all available subscription plans. No authentication required.
+
+**Response `200`:**
+
+```json
+[
+  {
+    "id": "basic",
+    "name": "Basic",
+    "price": 9.99,
+    "currency": "USD",
+    "features": ["Up to 1 user", "Basic support", "10 GB storage"]
+  },
+  {
+    "id": "standard",
+    "name": "Standard",
+    "price": 19.99,
+    "currency": "USD",
+    "features": ["Up to 5 users", "Priority support", "50 GB storage"]
+  },
+  {
+    "id": "premium",
+    "name": "Premium",
+    "price": 39.99,
+    "currency": "USD",
+    "features": ["Unlimited users", "24/7 support", "500 GB storage"]
+  }
+]
+```
+
+---
+
+### Subscriptions
+
+All subscription routes require a valid JWT token.
+
+#### `POST /subscription`
+
+Create or update the authenticated user's subscription.
+
+**Headers:** `Authorization: Bearer <token>`
+
+**Request body:**
+
+```json
+{
+  "planId": "basic"
+}
+```
+
+Valid `planId` values: `basic`, `standard`, `premium`
+
+**Response `201`:**
+
+```json
+{
+  "userId": "...",
+  "planId": "basic",
+  "status": "active",
+  "startDate": "2026-04-05T00:00:00.000Z"
+}
+```
+
+---
+
+#### `GET /subscription`
+
+Get the authenticated user's current subscription.
+
+**Headers:** `Authorization: Bearer <token>`
+
+**Response `200`:**
+
+```json
+{
+  "userId": "...",
+  "planId": "standard",
+  "status": "active",
+  "startDate": "2026-04-05T00:00:00.000Z"
+}
+```
+
+---
+
+#### `POST /subscription/cancel`
+
+Cancel the authenticated user's active subscription.
+
+**Headers:** `Authorization: Bearer <token>`
+
+**Response `200`:**
+
+```json
+{
+  "message": "Subscription cancelled successfully"
+}
+```
+
+---
+
+### Admin
+
+Admin routes require a JWT token **and** the `admin` role.
+
+#### `GET /admin/subscriptions`
+
+Retrieve all subscriptions across all users.
+
+**Headers:** `Authorization: Bearer <admin_token>`
+
+**Response `200`:**
+
+```json
+[
+  {
+    "userId": "...",
+    "planId": "premium",
+    "status": "active",
+    "startDate": "2026-04-01T00:00:00.000Z"
+  }
+]
+```
+
+---
+
+## Postman Collection
+
+The full Postman workspace with all requests, example payloads, and environments is publicly available:
+
+**[https://www.postman.com/dheereshag/upcover](https://www.postman.com/dheereshag/upcover)**
+
+To use it:
+
+1. Open the link above in Postman (web or desktop app).
+2. Fork the collection into your own workspace, or click **Run in Postman**.
+3. Set the `baseUrl` environment variable to `http://localhost:3000`.
+4. Register a user via `POST /register`, copy the returned `access_token`, and set it as the `token` environment variable — all authenticated requests pick it up automatically.
+
+---
+
+## Swagger Docs
+
+Interactive API documentation is available at:
+
+```
+http://localhost:3000/api
+```
+
+---
+
+## Running Tests
+
+```bash
+# Unit tests
+pnpm run test
+
+# Unit tests in watch mode
+pnpm run test:watch
+
+# e2e tests
+pnpm run test:e2e
+
+# Test coverage
+pnpm run test:cov
+```
