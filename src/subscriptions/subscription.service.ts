@@ -9,7 +9,7 @@ import {
   Subscription,
   SubscriptionDocument,
 } from './schemas/subscription.schema';
-import { PLANS } from './plans.constant';
+import { PlanId, PLANS } from './plans.constant';
 
 @Injectable()
 export class SubscriptionService {
@@ -44,6 +44,27 @@ export class SubscriptionService {
     }
 
     subscription.status = 'cancelled';
+    return subscription.save();
+  }
+
+  async createSubscription(
+    userId: string,
+    planId: PlanId,
+  ): Promise<SubscriptionDocument> {
+    const existing = await this.subscriptionModel
+      .findOne({ userId: new Types.ObjectId(userId), status: 'active' })
+      .exec();
+
+    if (existing) {
+      throw new BadRequestException('User already has an active subscription');
+    }
+
+    const subscription = new this.subscriptionModel({
+      userId: new Types.ObjectId(userId),
+      planId,
+      status: 'active',
+    });
+
     return subscription.save();
   }
 }
