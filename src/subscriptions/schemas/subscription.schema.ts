@@ -11,7 +11,7 @@ export class Subscription {
   @Prop({ required: true, type: Types.ObjectId, ref: 'User' })
   userId!: Types.ObjectId;
 
-  @Prop({ required: true, enum: PlanId })
+  @Prop({ required: true, type: String, enum: PlanId })
   planId!: PlanId;
 
   @Prop({ required: true, enum: ['active', 'cancelled'], default: 'active' })
