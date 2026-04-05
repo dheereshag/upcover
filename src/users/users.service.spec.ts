@@ -9,6 +9,10 @@ const mockUser = {
   password: 'hashedpassword',
 };
 
+type MockUserModelType = jest.Mock<{ save: jest.Mock }, [unknown]> & {
+  findOne: jest.Mock;
+};
+
 describe('UsersService', () => {
   let service: UsersService;
   let saveMock: jest.Mock;
@@ -19,9 +23,9 @@ describe('UsersService', () => {
     saveMock = jest.fn().mockResolvedValue(mockUser);
     findOneMock = jest.fn();
 
-    const MockUserModel: any = jest
+    const MockUserModel = jest
       .fn()
-      .mockImplementation(() => ({ save: saveMock }));
+      .mockImplementation(() => ({ save: saveMock })) as MockUserModelType;
     MockUserModel.findOne = findOneMock;
 
     module = await Test.createTestingModule({

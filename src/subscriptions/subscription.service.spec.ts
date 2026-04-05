@@ -23,6 +23,10 @@ const mockSubscriptionModel = {
   findOne: jest.fn(),
 };
 
+type MockSubscriptionModelType = jest.Mock<{ save: jest.Mock }, [unknown]> & {
+  findOne: jest.Mock;
+};
+
 describe('SubscriptionService', () => {
   let service: SubscriptionService;
   let saveMock: jest.Mock;
@@ -31,9 +35,9 @@ describe('SubscriptionService', () => {
   beforeEach(async () => {
     saveMock = jest.fn().mockResolvedValue(mockActiveSubscription);
 
-    const MockModel: any = jest
+    const MockModel = jest
       .fn()
-      .mockImplementation(() => ({ save: saveMock }));
+      .mockImplementation(() => ({ save: saveMock })) as MockSubscriptionModelType;
     MockModel.findOne = mockSubscriptionModel.findOne;
 
     module = await Test.createTestingModule({
