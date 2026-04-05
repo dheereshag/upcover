@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { SubscriptionController } from './subscription.controller';
 import { SubscriptionService } from './subscription.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { RolesGuard } from '../auth/roles.guard';
 import { PlanId, PLANS } from './plans.constant';
 
 const mockUserId = 'user-id-1';
@@ -19,6 +20,7 @@ const mockSubscriptionService: Partial<SubscriptionService> = {
   getSubscription: jest.fn(),
   cancelSubscription: jest.fn(),
   createSubscription: jest.fn(),
+  getAllSubscriptions: jest.fn(),
 };
 
 describe('SubscriptionController', () => {
@@ -33,6 +35,8 @@ describe('SubscriptionController', () => {
       ],
     })
       .overrideGuard(JwtAuthGuard)
+      .useValue({ canActivate: () => true })
+      .overrideGuard(RolesGuard)
       .useValue({ canActivate: () => true })
       .compile();
 
@@ -102,6 +106,20 @@ describe('SubscriptionController', () => {
         PlanId.BASIC,
       );
       expect(result).toEqual(mockSubscription);
+    });
+  });
+
+  describe('getAllSubscriptions', () => {
+    it('should return all subscriptions for admin', async () => {
+      const allSubs = [mockSubscription];
+      (
+        mockSubscriptionService.getAllSubscriptions as jest.Mock
+      ).mockResolvedValue(allSubs);
+
+      const result = await controller.getAllSubscriptions();
+
+      expect(mockSubscriptionService.getAllSubscriptions).toHaveBeenCalled();
+      expect(result).toEqual(allSubs);
     });
   });
 });

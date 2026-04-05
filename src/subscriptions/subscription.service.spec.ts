@@ -21,6 +21,7 @@ const mockActiveSubscription = {
 
 const mockSubscriptionModel = {
   findOne: jest.fn(),
+  find: jest.fn(),
 };
 
 type MockSubscriptionModelType = jest.Mock<{ save: jest.Mock }, [unknown]> & {
@@ -37,8 +38,12 @@ describe('SubscriptionService', () => {
 
     const MockModel = jest
       .fn()
-      .mockImplementation(() => ({ save: saveMock })) as MockSubscriptionModelType;
+      .mockImplementation(() => ({
+        save: saveMock,
+      })) as MockSubscriptionModelType;
     MockModel.findOne = mockSubscriptionModel.findOne;
+    (MockModel as unknown as { find: jest.Mock }).find =
+      mockSubscriptionModel.find;
 
     module = await Test.createTestingModule({
       providers: [
@@ -93,7 +98,16 @@ describe('SubscriptionService', () => {
 
   describe('cancelSubscription', () => {
     it('should cancel an active subscription', async () => {
-      const sub = { ...mockActiveSubscription, status: 'active', save: jest.fn().mockResolvedValue({ ...mockActiveSubscription, status: 'cancelled' }) };
+      const sub = {
+        ...mockActiveSubscription,
+        status: 'active',
+        save: jest
+          .fn()
+          .mockResolvedValue({
+            ...mockActiveSubscription,
+            status: 'cancelled',
+          }),
+      };
       mockSubscriptionModel.findOne.mockReturnValue({
         exec: jest.fn().mockResolvedValue(sub),
       });
@@ -135,6 +149,20 @@ describe('SubscriptionService', () => {
       await expect(
         service.createSubscription(userId, PlanId.BASIC),
       ).rejects.toThrow(BadRequestException);
+    });
+  });
+
+  describe('getAllSubscriptions', () => {
+    it('should return all subscriptions', async () => {
+      const allSubs = [mockActiveSubscription];
+      mockSubscriptionModel.find.mockReturnValue({
+        exec: jest.fn().mockResolvedValue(allSubs),
+      });
+
+      const result = await service.getAllSubscriptions();
+
+      expect(mockSubscriptionModel.find).toHaveBeenCalled();
+      expect(result).toEqual(allSubs);
     });
   });
 });

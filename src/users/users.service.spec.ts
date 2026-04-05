@@ -2,11 +2,13 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { getModelToken } from '@nestjs/mongoose';
 import { UsersService } from './users.service';
 import { User } from './schemas/user.schema';
+import { Role } from '../auth/enums/role.enum';
 
 const mockUser = {
   _id: 'user-id-1',
   email: 'test@example.com',
   password: 'hashedpassword',
+  role: Role.User,
 };
 
 type MockUserModelType = jest.Mock<{ save: jest.Mock }, [unknown]> & {

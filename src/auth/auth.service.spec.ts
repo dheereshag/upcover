@@ -4,6 +4,7 @@ import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { AuthService } from './auth.service';
 import { UsersService } from '../users/users.service';
+import { Role } from './enums/role.enum';
 
 jest.mock('bcrypt');
 
@@ -11,6 +12,7 @@ const mockUser = {
   _id: 'user-id-1',
   email: 'test@example.com',
   password: 'hashedpassword',
+  role: Role.User,
 };
 
 const mockUsersService: Partial<UsersService> = {
@@ -72,7 +74,10 @@ describe('AuthService', () => {
       (mockUsersService.findByEmail as jest.Mock).mockResolvedValue(mockUser);
 
       await expect(
-        service.register({ email: 'test@example.com', password: 'password123' }),
+        service.register({
+          email: 'test@example.com',
+          password: 'password123',
+        }),
       ).rejects.toThrow(ConflictException);
 
       expect(mockUsersService.create).not.toHaveBeenCalled();
@@ -94,6 +99,7 @@ describe('AuthService', () => {
       expect(mockJwtService.signAsync).toHaveBeenCalledWith({
         sub: mockUser._id,
         email: mockUser.email,
+        role: mockUser.role,
       });
     });
 
@@ -101,7 +107,10 @@ describe('AuthService', () => {
       (mockUsersService.findByEmail as jest.Mock).mockResolvedValue(null);
 
       await expect(
-        service.login({ email: 'unknown@example.com', password: 'password123' }),
+        service.login({
+          email: 'unknown@example.com',
+          password: 'password123',
+        }),
       ).rejects.toThrow(UnauthorizedException);
     });
 
