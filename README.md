@@ -95,17 +95,17 @@ Create a `.env` file in the project root:
 
 ```env
 PORT=3000
-MONGODB_URI=mongodb://localhost:27017/upcover
+MONGO_URI=mongodb://localhost:27017/upcover
 JWT_SECRET=your_jwt_secret_here
-JWT_EXPIRES_IN=7d
+JWT_EXPIRES_IN=1y
 ```
 
 | Variable         | Description                       | Default |
 |------------------|-----------------------------------|---------|
 | `PORT`           | Port the server listens on        | `3000`  |
-| `MONGODB_URI`    | MongoDB connection string         | —       |
+| `MONGO_URI`      | MongoDB connection string         | —       |
 | `JWT_SECRET`     | Secret key for signing JWT tokens | —       |
-| `JWT_EXPIRES_IN` | JWT token expiration duration     | `7d`    |
+| `JWT_EXPIRES_IN` | JWT token expiration duration     | `1y`    |
 
 ---
 
