@@ -321,6 +321,51 @@ Copy the webhook signing secret shown in the Stripe Dashboard into your `.env` a
 
 ---
 
+### Testing the Stripe Checkout Flow end-to-end
+
+**Prerequisites:** server running on port 3000, ngrok tunnelling to it, webhook registered in Stripe Dashboard.
+
+**1. Register and login:**
+
+```bash
+curl -s -X POST http://localhost:3000/register \
+  -H "Content-Type: application/json" \
+  -d '{"email":"test@example.com","password":"Password123!"}'
+
+curl -s -X POST http://localhost:3000/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"test@example.com","password":"Password123!"}'
+# → copy the access_token from the response
+```
+
+**2. Create a Checkout Session:**
+
+```bash
+curl -s -X POST http://localhost:3000/subscription/checkout \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer <YOUR_ACCESS_TOKEN>" \
+  -d '{
+    "planId": "basic",
+    "successUrl": "https://example.com/success",
+    "cancelUrl": "https://example.com/cancel"
+  }'
+# → returns { "url": "https://checkout.stripe.com/..." }
+```
+
+**3. Complete payment:**
+
+Open the `url` in a browser. Use a test card from the table above. Submit the form.
+
+**4. Verify the subscription is now active:**
+
+```bash
+curl -s http://localhost:3000/subscription \
+  -H "Authorization: Bearer <YOUR_ACCESS_TOKEN>"
+# → status should be "active" once Stripe fires the webhook
+```
+
+---
+
 ### Admin
 
 Admin routes require a JWT token **and** the `admin` role.
